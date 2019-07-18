@@ -2,25 +2,25 @@
 A small script to create custom Debian image for Raspberry Pi.
 
 ## WARNING
-***You should not download and execute a script as (Enoch) root without having idea what it does.***
+**You should NOT download and execute a script as (Enoch) root without having idea what it does.**
+- So, please, take a look into it and make sure it fits your environment, there is not warranty under any circunstances.
 
-So, please, take a look into it and make sure it fits your environment, there is not warranty under any circunstances.
+**Raspberry Pi IS NOT open hardware, so, you really don't know if they come bugged.**
+- Try to avoid this hardware for real implementations, there are little expensive but far better ARM out there.
+- IE: https://www.hardkernel.com/
 
-Raspberry Pi IS NOT open hardware, so, you really don't know if they come bugged.
-
-(Try to avoid this hardware for real implementations, there are little expensive but far better ARM out there)
-
-This script was designed for Debian environment, it should work on Ubuntu but I don't even tried.
+**This script was designed for Debian environment.**
+- It should work on Ubuntu but I don't even tried.
 
 ## Description
 It creates a rpi compatible SD image and then wraps classical Debian installation strategy using debotstrap.
 After that, it does few tweaks into new installation to leave it ready to power on and connect through network.
 
 I wrote this script to make my (and friends..) life easier deploying rpi.
-I tried to make it simple and clear as possible so anyone can learn from it.
+I tried to make it simple, descriptive and clear as possible so anyone can learn from it.
 
 ## Usage
-Once again, please, read whole usage and script before start.
+**Once again, please, read whole usage and script before start.**
 
 - Clone this repo.
 ```
