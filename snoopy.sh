@@ -6,20 +6,25 @@
 ####### ####### ####### OPTIONS ####### ####### #######
 
 ####### Architecture
-# pi1 -> armabi
+# https://www.debian.org/ports/arm/
+# pi1 -> armel
 # pi2, pi3 -> armhf
 DEBIAN_ARCH="armhf"
 
 ####### Version
+# https://www.debian.org/releases/
 # unstable -> sid
 # testing -> bullseye
-# stable -> strech
+# stable -> buster
 DEBIAN_VERSION="sid"
 
 ####### Hostname
+# https://en.wikipedia.org/wiki/Hostname
 IMAGE_HOSTNAME="nx1701"
 
 ####### Locales
+# https://en.wikipedia.org/wiki/Locale_(computer_software)
+# https://wiki.debian.org/Locale
 IMAGE_LANG="es_AR"
 IMAGE_CODE="UTF-8"
 IMAGE_TZ="America/Argentina/Buenos_Aires"
@@ -27,10 +32,11 @@ IMAGE_TZ="America/Argentina/Buenos_Aires"
 ####### ####### ####### ####### ####### ####### #######
 
 
-####### DEFINITIONS #######
-# Change them if you know what you are doing.
+####### DEFINITIONS #######.
 PACKAGES_REQUIRED="binfmt-support qemu qemu-user-static debootstrap curl unzip"
+# https://www.debian.org/mirror/list
 DEBIAN_REPOSITORY="http://deb.debian.org/debian/"
+# https://github.com/raspberrypi/firmware
 RPI_FIRMWARE_GIT="https://github.com/raspberrypi/firmware/archive/master.zip"
 TARGET_IMAGE="debian_${DEBIAN_VERSION}_${DEBIAN_ARCH}.img"
 CACHE_DIRECTORY="${PWD}/CACHE"
@@ -41,27 +47,46 @@ LOG_FILE="debian_${DEBIAN_VERSION}_${DEBIAN_ARCH}.log"
 IMAGE_LOCAL="${IMAGE_LANG}.${IMAGE_CODE} ${IMAGE_CODE}"
 
 ####### COMMANDS #######
+#######   RTFM   #######
+# https://en.wikipedia.org/wiki/RTFM
 COMMAND_APT="apt-get"
 # https://manpages.debian.org/unstable/apt/apt-get.8.en.html
 COMMAND_MKDIR="mkdir"
+# https://manpages.debian.org/unstable/coreutils/mkdir.1.en.html
 COMMAND_CURL="curl"
 # https://manpages.debian.org/unstable/curl/curl.1.en.html
 COMMAND_UNZIP="unzip"
+# https://manpages.debian.org/unstable/unzip/unzip.1.en.html
 COMMAND_DD="dd"
+# https://manpages.debian.org/unstable/coreutils/dd.1.en.html
 COMMAND_ECHO="echo"
+# https://manpages.debian.org/unstable/coreutils/echo.1.en.html
 COMMAND_FDISK="fdisk"
+# https://manpages.debian.org/unstable/fdisk/fdisk.8.en.html
 COMMAND_LOSETUP="losetup"
+# https://manpages.debian.org/unstable/mount/losetup.8.en.html
 COMMAND_MKFS_VFAT="mkfs.vfat"
+# https://manpages.debian.org/unstable/dosfstools/mkfs.vfat.8.en.html
 COMMAND_MKFS_EXT4="mkfs.ext4"
+# https://manpages.debian.org/unstable/e2fsprogs/mkfs.ext4.8.en.html
 COMMAND_BLKID="blkid"
+# https://manpages.debian.org/unstable/util-linux/blkid.8.en.html
 COMMAND_MOUNT="mount"
+# https://manpages.debian.org/unstable/mount/mount.8.en.html
 COMMAND_CP="cp"
+# https://manpages.debian.org/unstable/coreutils/cp.1.en.html
 COMMAND_QEMU_DEBOOTSTRAP="qemu-debootstrap"
+# https://manpages.debian.org/unstable/qemu-user-static/qemu-debootstrap.1.en.html
 COMMAND_RM="rm"
+# https://manpages.debian.org/unstable/coreutils/rm.1.en.html
 COMMAND_SSH_KEYGEN="ssh-keygen"
+# https://manpages.debian.org/unstable/openssh-client/ssh-keygen.1.en.html
 COMMAND_CHROOT="chroot"
+# https://manpages.debian.org/buster/manpages-hu/chroot.1.hu.html.gz
 COMMAND_UMOUNT="umount"
+# https://manpages.debian.org/buster/mount/umount.8.en.html
 COMMAND_DATE="date"
+# https://manpages.debian.org/buster/coreutils/date.1.en.html
 
 ####### VARIABLES #######
 TARGET_LOOP="" # loosetup
