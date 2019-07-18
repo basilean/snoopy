@@ -84,13 +84,13 @@ ${COMMAND_MKDIR} ${CACHE_DIRECTORY}
 
 ${COMMAND_ECHO} "-> Downloading Raspberry Pi closed firmware and kernel...
 (Yes, it IS NOT open hardware.)"
-${COMMAND_CURL} -L ${RPI_FIRMWARE_GIT} -o ${CACHE_DIRECTORY}/${FIRMWARE_NAME}.zip >> ${LOG_FILE}
+${COMMAND_CURL} -L ${RPI_FIRMWARE_GIT} -o ${CACHE_DIRECTORY}/${FIRMWARE_NAME}.zip >> ${LOG_FILE} 2>> ${LOG_FILE}
 
 ${COMMAND_ECHO} "-> Unziping firmware and kernel..."
 ${COMMAND_UNZIP} ${CACHE_DIRECTORY}/${FIRMWARE_NAME}.zip -d ${CACHE_DIRECTORY} >> ${LOG_FILE}
 
 ${COMMAND_ECHO} "-> Creating 2Gb image with zeros..."
-${COMMAND_DD} if=/dev/zero of=${TARGET_IMAGE} bs=4M count=500 >> ${LOG_FILE}
+${COMMAND_DD} if=/dev/zero of=${TARGET_IMAGE} bs=4M count=500 >> ${LOG_FILE}  2>> ${LOG_FILE}
 
 ${COMMAND_ECHO} "-> Making partitions...
 /boot 100M
@@ -126,17 +126,17 @@ TARGET_LOOP=`${COMMAND_LOSETUP} -vfP --show ${TARGET_IMAGE}`
 ${COMMAND_ECHO} ${TARGET_LOOP}
 
 ${COMMAND_ECHO} "-> Creating partition boot..."
-${COMMAND_MKFS_VFAT} ${TARGET_LOOP}p1 >> ${LOG_FILE}
+${COMMAND_MKFS_VFAT} ${TARGET_LOOP}p1 >> ${LOG_FILE} 2>> ${LOG_FILE}
 TARGET_LOOP_PARTUUID_BOOT=`${COMMAND_BLKID} -s PARTUUID -o value ${TARGET_LOOP}p1`
 ${COMMAND_ECHO} ${TARGET_LOOP_PARTUUID_BOOT}
 
 ${COMMAND_ECHO} "-> Creating partition root..."
-${COMMAND_MKFS_EXT4} ${TARGET_LOOP}p2 >> ${LOG_FILE}
+${COMMAND_MKFS_EXT4} ${TARGET_LOOP}p2 >> ${LOG_FILE} 2>> ${LOG_FILE}
 TARGET_LOOP_PARTUUID_ROOT=`${COMMAND_BLKID} -s PARTUUID -o value ${TARGET_LOOP}p2`
 ${COMMAND_ECHO} ${TARGET_LOOP_PARTUUID_ROOT}
 
 ${COMMAND_ECHO} "-> Creating partition storage..."
-${COMMAND_MKFS_EXT4} ${TARGET_LOOP}p3 >> ${LOG_FILE}
+${COMMAND_MKFS_EXT4} ${TARGET_LOOP}p3 >> ${LOG_FILE} 2>> ${LOG_FILE}
 TARGET_LOOP_PARTUUID_STORAGE=`${COMMAND_BLKID} -s PARTUUID -o value ${TARGET_LOOP}p3`
 ${COMMAND_ECHO} ${TARGET_LOOP_PARTUUID_STORAGE}
 
@@ -155,7 +155,7 @@ ${COMMAND_MOUNT} ${TARGET_LOOP}p3 ${CACHE_DIRECTORY_MOUNTPOINT}/storage/
 
 ${COMMAND_ECHO} "-> Building Debian base system...
 (It takes couple of minutes downloading, extracting and configuring.)"
-${COMMAND_QEMU_DEBOOTSTRAP} --arch ${DEBIAN_ARCH} --include=ssh,locales ${DEBIAN_VERSION} ${CACHE_DIRECTORY_MOUNTPOINT} ${DEBIAN_REPOSITORY}  >> ${LOG_FILE}
+${COMMAND_QEMU_DEBOOTSTRAP} --arch ${DEBIAN_ARCH} --include=ssh,locales ${DEBIAN_VERSION} ${CACHE_DIRECTORY_MOUNTPOINT} ${DEBIAN_REPOSITORY}  >> ${LOG_FILE} 2>> ${LOG_FILE}
 
 ${COMMAND_ECHO} "-> Copying firmware and kernel..."
 ${COMMAND_CP} -av ${CACHE_DIRECTORY}/${FIRMWARE_NAME}/boot/* ${CACHE_DIRECTORY_MOUNTPOINT}/boot/ >> ${LOG_FILE}
@@ -169,22 +169,23 @@ PARTUUID=${TARGET_LOOP_PARTUUID_BOOT} /boot vfat defaults 0 2
 PARTUUID=${TARGET_LOOP_PARTUUID_ROOT} / ext4 defaults,noatime 0 1
 PARTUUID=${TARGET_LOOP_PARTUUID_STORAGE} /storage ext4 defaults,noatime 0 1" > ${CACHE_DIRECTORY_MOUNTPOINT}/etc/fstab
 
+${COMMAND_ECHO} ${IMAGE_LOCAL} > ${CACHE_DIRECTORY_MOUNTPOINT}/etc/locale.gen
+${COMMAND_CHROOT} ${CACHE_DIRECTORY_MOUNTPOINT} locale-gen >> ${LOG_FILE} 2>> ${LOG_FILE}
+${COMMAND_CHROOT} ${CACHE_DIRECTORY_MOUNTPOINT} update-locale LANG=${IMAGE_LANG}.${IMAGE_CODE} LANGUAGE=${IMAGE_LANG}.${IMAGE_CODE} LC_ALL=${IMAGE_LANG}.${IMAGE_CODE}  >> ${LOG_FILE} 2>> ${LOG_FILE}
+
+${COMMAND_RM} ${CACHE_DIRECTORY_MOUNTPOINT}/etc/localtime
+${COMMAND_CHROOT} ${CACHE_DIRECTORY_MOUNTPOINT} ln -s /usr/share/zoneinfo/${IMAGE_TZ} /etc/localtime
+${COMMAND_CHROOT} ${CACHE_DIRECTORY_MOUNTPOINT} dpkg-reconfigure -f noninteractive tzdata >> ${LOG_FILE} 2>> ${LOG_FILE}
+
 ${COMMAND_ECHO} "[Match]
 Name=enx*
 [Network]
 DHCP=ipv4" > ${CACHE_DIRECTORY_MOUNTPOINT}/etc/systemd/network/20-wired.network
-${COMMAND_CHROOT} ${CACHE_DIRECTORY_MOUNTPOINT} systemctl enable systemd-networkd.service >> ${LOG_FILE}
+${COMMAND_CHROOT} ${CACHE_DIRECTORY_MOUNTPOINT} systemctl enable systemd-networkd.service >> ${LOG_FILE} 2>> ${LOG_FILE}
 
 ${COMMAND_ECHO} ${IMAGE_HOSTNAME} > ${CACHE_DIRECTORY_MOUNTPOINT}/etc/hostname
 
-${COMMAND_ECHO} ${IMAGE_LOCAL} > ${CACHE_DIRECTORY_MOUNTPOINT}/etc/locale.gen
-${COMMAND_CHROOT} ${CACHE_DIRECTORY_MOUNTPOINT} locale-gen >> ${LOG_FILE}
-${COMMAND_CHROOT} ${CACHE_DIRECTORY_MOUNTPOINT} update-locale LANG=${IMAGE_LANG}.${IMAGE_CODE} LANGUAGE=${IMAGE_LANG}.${IMAGE_CODE} LC_ALL=${IMAGE_LANG}.${IMAGE_CODE}
-
 ${COMMAND_RM} ${CACHE_DIRECTORY_MOUNTPOINT}/lib/systemd/system/getty.target.wants/getty-static.service
-
-${COMMAND_CHROOT} ${CACHE_DIRECTORY_MOUNTPOINT} ln -s /usr/share/zoneinfo/${IMAGE_TZ} /etc/localtime
-${COMMAND_CHROOT} ${CACHE_DIRECTORY_MOUNTPOINT} dpkg-reconfigure -f noninteractive tzdata
 
 ${COMMAND_ECHO} "-> Creating ssh key pair for root..."
 ${COMMAND_SSH_KEYGEN} -b 4096 -t rsa -f ${ROOT_KEYPAIR} -N ""  >> ${LOG_FILE}

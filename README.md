@@ -54,6 +54,11 @@ I tried to make it simple, descriptive and clear as possible so anyone can learn
     bash snoopy.sh
 ```
 
+- You can open another terminal and see in details what is going on.
+```
+    tail -f debian_sid_armhf.log
+```
+
 - If everything were right, you should found a list of files.
 (using armhf architecture and sid version)
 ```
