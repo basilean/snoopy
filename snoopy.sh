@@ -19,7 +19,7 @@ DEBIAN_ARCH="armhf"
 DEBIAN_VERSION="sid"
 
 ####### Hostname
-IMAGE_HOSTNAME="ncc1701c"
+IMAGE_HOSTNAME="nx1701"
 
 ####### Locales
 IMAGE_LANG="es_AR"
