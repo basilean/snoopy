@@ -180,7 +180,7 @@ ${COMMAND_MOUNT} ${TARGET_LOOP}p3 ${CACHE_DIRECTORY_MOUNTPOINT}/storage/
 
 ${COMMAND_ECHO} "-> Building Debian base system...
 (It takes couple of minutes downloading, extracting and configuring.)"
-${COMMAND_QEMU_DEBOOTSTRAP} --arch ${DEBIAN_ARCH} --include=ssh,locales ${DEBIAN_VERSION} ${CACHE_DIRECTORY_MOUNTPOINT} ${DEBIAN_REPOSITORY}  >> ${LOG_FILE} 2>> ${LOG_FILE}
+${COMMAND_QEMU_DEBOOTSTRAP} --arch ${DEBIAN_ARCH} --include=ssh,locales,rngd-tools ${DEBIAN_VERSION} ${CACHE_DIRECTORY_MOUNTPOINT} ${DEBIAN_REPOSITORY}  >> ${LOG_FILE} 2>> ${LOG_FILE}
 
 ${COMMAND_ECHO} "-> Copying firmware and kernel..."
 ${COMMAND_CP} -av ${CACHE_DIRECTORY}/${FIRMWARE_NAME}/boot/* ${CACHE_DIRECTORY_MOUNTPOINT}/boot/ >> ${LOG_FILE}
@@ -233,6 +233,7 @@ n
 w
 \" | fdisk /dev/mmcblk0
 resize2fs /dev/mmcblk0p3
+fsck -fy /dev/mmcblk0p3
 mount /storage
 rm /root/resize_storage.bash" > ${CACHE_DIRECTORY_MOUNTPOINT}/root/resize_storage.bash
 
