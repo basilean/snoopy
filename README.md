@@ -54,7 +54,7 @@ I tried to make it simple, descriptive and clear as possible so anyone can learn
     bash snoopy.sh
 ```
 
-- If everything was right, you should found a list of files.
+- If everything were right, you should found a list of files.
 (using armhf architecture and sid version)
 ```
     debian_sid_armhf.img # Image ready to be burnt into SD.
@@ -64,6 +64,7 @@ I tried to make it simple, descriptive and clear as possible so anyone can learn
 ```
 
 - After that, burn SD.
+(Don't be foul to copy and paste folllw line, check that "of=/dev/mmcblk0" is right SD device and there is not partitions mounted.)
 ```
     dd if=debian_sid_armhf.img of=/dev/mmcblk0 bs=4M
 ```
