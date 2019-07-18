@@ -69,7 +69,7 @@ I tried to make it simple, descriptive and clear as possible so anyone can learn
 ```
 
 - After that, burn SD.
-(Don't be foul to copy and paste folllw line, check that "of=/dev/mmcblk0" is right SD device and there is not partitions mounted.)
+(Don't be foul to copy and paste follow line, check that "of=/dev/mmcblk0" is right SD device and there is not partitions mounted.)
 ```
     dd if=debian_sid_armhf.img of=/dev/mmcblk0 bs=4M
 ```
