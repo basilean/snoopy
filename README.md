@@ -43,6 +43,11 @@ I tried to make it simple, descriptive and clear as possible so anyone can learn
         IMAGE_TZ="America/Argentina/Buenos_Aires"
 ```
 
+- Become root to continue,
+```
+    su - # or # sudo su -
+```
+
 - Run it and wait for completation.
 (It takes around 10/15 minutes)
 ```
