@@ -2,9 +2,7 @@
 #
 # Andres Basile
 #
-# TODO:
-# - Add cache to do not download again
-#
+
 ####### ####### ####### OPTIONS ####### ####### #######
 
 ####### Architecture
