@@ -9,7 +9,8 @@
 # https://www.debian.org/ports/arm/
 # pi1 -> armel
 # pi2, pi3 -> armhf
-DEBIAN_ARCH="armhf"
+# pi3, pi4 -> arm64 
+DEBIAN_ARCH="arm64"
 
 ####### Version
 # https://www.debian.org/releases/
@@ -28,6 +29,20 @@ IMAGE_HOSTNAME="nx1701"
 IMAGE_LANG="es_AR"
 IMAGE_CODE="UTF-8"
 IMAGE_TZ="America/Argentina/Buenos_Aires"
+
+####### Partitions in Megabytes
+# https://en.wikipedia.org/wiki/Disk_partitioning
+PARTITION_BOOT=100
+PARTITION_ROOT=2900
+
+####### Packages
+# https://www.debian.org/distrib/packages
+INCLUDE_PACKAGES=""
+# Tools
+# rng-tools
+# Wifi
+# crda wpasupplicant
+# docker.io
 
 ####### ####### ####### ####### ####### ####### #######
 
@@ -93,6 +108,7 @@ TARGET_LOOP="" # loosetup
 TARGET_LOOP_PARTUUID_BOOT="" # blkid
 TARGET_LOOP_PARTUUID_ROOT="" # blkid
 TARGET_LOOP_PARTUUID_STORAGE="" # blkid
+TARGET_SIZE=$(($((${PARTITION_BOOT}+${PARTITION_ROOT}))+10))
 
 ####### PROGRAM #######
 ${COMMAND_ECHO} "-> Starting Logging...
@@ -107,33 +123,26 @@ ${COMMAND_ECHO} "-> Creating cache directory...
 ${CACHE_DIRECTORY}"
 ${COMMAND_MKDIR} ${CACHE_DIRECTORY}
 
-${COMMAND_ECHO} "-> Downloading Raspberry Pi closed firmware and kernel...
-(Yes, it IS NOT open hardware.)"
-${COMMAND_CURL} -L ${RPI_FIRMWARE_GIT} -o ${CACHE_DIRECTORY}/${FIRMWARE_NAME}.zip >> ${LOG_FILE} 2>> ${LOG_FILE}
-
-${COMMAND_ECHO} "-> Unziping firmware and kernel..."
-${COMMAND_UNZIP} ${CACHE_DIRECTORY}/${FIRMWARE_NAME}.zip -d ${CACHE_DIRECTORY} >> ${LOG_FILE}
-
-${COMMAND_ECHO} "-> Creating 2Gb image with zeros..."
-${COMMAND_DD} if=/dev/zero of=${TARGET_IMAGE} bs=4M count=500 >> ${LOG_FILE}  2>> ${LOG_FILE}
+${COMMAND_ECHO} "-> Creating ${TARGET_SIZE}Mb image with zeros..."
+${COMMAND_DD} if=/dev/zero of=${TARGET_IMAGE} bs=1M count=${TARGET_SIZE} >> ${LOG_FILE}  2>> ${LOG_FILE}
 
 ${COMMAND_ECHO} "-> Making partitions...
-/boot 100M
-/ 1.6G
+/boot ${PARTITION_BOOT}
+/ ${PARTITION_ROOT}
 /storage (free space)"
 ${COMMAND_ECHO} "o
 n
 p
 1
 
-+100M
++${PARTITION_BOOT}M
 t
 c
 n
 p
 2
 
-+1800M
++${PARTITION_ROOT}M
 n
 p
 3
@@ -178,15 +187,27 @@ ${COMMAND_MKDIR} ${CACHE_DIRECTORY_MOUNTPOINT}/storage
 ${COMMAND_MOUNT} ${TARGET_LOOP}p1 ${CACHE_DIRECTORY_MOUNTPOINT}/boot/
 ${COMMAND_MOUNT} ${TARGET_LOOP}p3 ${CACHE_DIRECTORY_MOUNTPOINT}/storage/
 
+${COMMAND_ECHO} "-> Downloading Raspberry Pi closed firmware and kernel...
+(Yes, it IS NOT open hardware.)"
+${COMMAND_CURL} -L ${RPI_FIRMWARE_GIT} -o ${CACHE_DIRECTORY}/${FIRMWARE_NAME}.zip >> ${LOG_FILE} 2>> ${LOG_FILE}
+
+${COMMAND_ECHO} "-> Unziping firmware and kernel..."
+${COMMAND_UNZIP} ${CACHE_DIRECTORY}/${FIRMWARE_NAME}.zip -d ${CACHE_DIRECTORY} >> ${LOG_FILE}
+
 ${COMMAND_ECHO} "-> Building Debian base system...
 (It takes couple of minutes downloading, extracting and configuring.)"
-${COMMAND_QEMU_DEBOOTSTRAP} --arch ${DEBIAN_ARCH} --include=ssh,locales,rng-tools ${DEBIAN_VERSION} ${CACHE_DIRECTORY_MOUNTPOINT} ${DEBIAN_REPOSITORY}  >> ${LOG_FILE} 2>> ${LOG_FILE}
+${COMMAND_QEMU_DEBOOTSTRAP} --arch ${DEBIAN_ARCH} --include=ssh,locales,${INCLUDE_PACKAGES} ${DEBIAN_VERSION} ${CACHE_DIRECTORY_MOUNTPOINT} ${DEBIAN_REPOSITORY}  >> ${LOG_FILE} 2>> ${LOG_FILE}
 
 ${COMMAND_ECHO} "-> Copying firmware and kernel..."
 ${COMMAND_CP} -av ${CACHE_DIRECTORY}/${FIRMWARE_NAME}/boot/* ${CACHE_DIRECTORY_MOUNTPOINT}/boot/ >> ${LOG_FILE}
 ${COMMAND_CP} -av ${CACHE_DIRECTORY}/${FIRMWARE_NAME}/modules ${CACHE_DIRECTORY_MOUNTPOINT}/lib/ >> ${LOG_FILE}
 
 ${COMMAND_ECHO} "-> Configuring image..."
+
+if [ ${DEBIAN_ARCH} = "arm64" ]; then
+    ${COMMAND_ECHO} "arm_64bit=1" > ${CACHE_DIRECTORY_MOUNTPOINT}/boot/config.txt
+fi
+
 ${COMMAND_ECHO} "dwc_otg.lpm_enable=0 console=serial0,115200 console=tty1 root=PARTUUID=${TARGET_LOOP_PARTUUID_ROOT} rootfstype=ext4 elevator=deadline fsck.repair=yes rootwait" > ${CACHE_DIRECTORY_MOUNTPOINT}/boot/cmdline.txt
 
 ${COMMAND_ECHO} "proc /proc proc defaults 0 0
@@ -203,7 +224,7 @@ ${COMMAND_CHROOT} ${CACHE_DIRECTORY_MOUNTPOINT} ln -s /usr/share/zoneinfo/${IMAG
 ${COMMAND_CHROOT} ${CACHE_DIRECTORY_MOUNTPOINT} dpkg-reconfigure -f noninteractive tzdata >> ${LOG_FILE} 2>> ${LOG_FILE}
 
 ${COMMAND_ECHO} "[Match]
-Name=enx*
+Name=enx* eth*
 [Network]
 DHCP=ipv4" > ${CACHE_DIRECTORY_MOUNTPOINT}/etc/systemd/network/20-wired.network
 ${COMMAND_CHROOT} ${CACHE_DIRECTORY_MOUNTPOINT} systemctl enable systemd-networkd.service >> ${LOG_FILE} 2>> ${LOG_FILE}

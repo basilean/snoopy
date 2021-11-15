@@ -41,6 +41,9 @@ I tried to make it simple, descriptive and clear as possible so anyone can learn
         IMAGE_LANG="es_AR"
         IMAGE_CODE="UTF-8"
         IMAGE_TZ="America/Argentina/Buenos_Aires"
+        PARTITION_BOOT=100
+        PARTITION_ROOT=2900
+        INCLUDE_PACKAGES=""
 ```
 
 - Become root to continue,
